@@ -45,7 +45,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.praktam2_2417051048.ui.theme.PrakTAM2_2417051048Theme
+import com.example.praktam2_2417051048.ui.theme.praktam2_2417051048Theme
+import com.example.praktam2_2417051048.ui.theme.Red
+import com.example.praktam2_2417051048.ui.theme.Green
 import androidx.compose.material3.Scaffold
 
 class MainActivity : ComponentActivity() {
@@ -53,8 +55,11 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            PrakTAM2_2417051048Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            praktam2_2417051048Theme {
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+                    containerColor = MaterialTheme.colorScheme.background
+                ) { innerPadding ->
                     ClassroomScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
@@ -75,7 +80,7 @@ fun ClassroomScreen(modifier: Modifier = Modifier) {
             Text(
                 text = "Kelas Kosong",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(bottom = 10.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -93,7 +98,7 @@ fun ClassroomScreen(modifier: Modifier = Modifier) {
             Text(
                 text = "Daftar Kelas",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
         }
@@ -112,6 +117,9 @@ fun DetailCard(
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
         elevation = CardDefaults.cardElevation(6.dp)
     ) {
         Column {
@@ -142,10 +150,20 @@ fun DetailCard(
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = classroom.namaRuang,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold
                 )
-                Text(text = "Status: ${classroom.status}")
-                Text(text = "Kapasitas: ${classroom.kapasitas}")
+                Text(
+                    text = "Status: ${classroom.status}",
+                    color = if (classroom.status == "Penuh") Red else Green,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Text(
+                    text = "Kapasitas: ${classroom.kapasitas}",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -163,7 +181,7 @@ fun DetailCard(
 @Preview(showBackground = true)
 @Composable
 fun ClassroomPreview() {
-    PrakTAM2_2417051048Theme {
+    praktam2_2417051048Theme {
         ClassroomScreen()
     }
 }
