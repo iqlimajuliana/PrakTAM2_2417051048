@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -49,6 +50,18 @@ import com.example.praktam2_2417051048.ui.theme.praktam2_2417051048Theme
 import com.example.praktam2_2417051048.ui.theme.Red
 import com.example.praktam2_2417051048.ui.theme.Green
 import androidx.compose.material3.Scaffold
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,54 +69,77 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             praktam2_2417051048Theme {
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-                    containerColor = MaterialTheme.colorScheme.background
-                ) { innerPadding ->
-                    ClassroomScreen(modifier = Modifier.padding(innerPadding))
-                }
+                val navController = rememberNavController()
+                AppNavigation(navController)
             }
         }
     }
 }
 
 @Composable
-fun ClassroomScreen(modifier: Modifier = Modifier) {
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .statusBarsPadding(),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+fun AppNavigation(navController: NavController) {
+    NavHost(
+        navController = navController as NavHostController,
+        startDestination = "classroom"
     ) {
-        item {
-            Text(
-                text = "Kelas Kosong",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 10.dp)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(classroomsource.classroom) { classroom ->
-                    ClassRowItem(classroom)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(45.dp))
-
-            Text(
-                text = "Daftar Kelas",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
+        composable("classroom") {
+            ClassroomScreen(navController = navController)
         }
-        items(classroomsource.classroom) { classroom ->
-            DetailCard(classroom = classroom)
+
+        composable("detail/{namaRuang}") { backStackEntry ->
+            val namaRuang = backStackEntry.arguments?.getString("namaRuang")
+            val classroom = classroomsource.classroom.find { it.namaRuang == namaRuang }
+            
+            if (classroom != null) {
+                DetailScreen(classroom = classroom, navController = navController)
+            }
+        }
+    }
+}
+
+@Composable
+fun ClassroomScreen(modifier: Modifier = Modifier, navController: NavController) {
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        containerColor = MaterialTheme.colorScheme.background
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .statusBarsPadding(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+        ) {
+            item {
+                Text(
+                    text = "Kelas Kosong",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(bottom = 10.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(classroomsource.classroom) { classroom ->
+                        ClassRowItem(classroom = classroom, navController = navController)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(45.dp))
+
+                Text(
+                    text = "Daftar Kelas",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+            items(classroomsource.classroom) { classroom ->
+                DetailCard(classroom = classroom, navController = navController)
+            }
         }
     }
 }
@@ -111,7 +147,9 @@ fun ClassroomScreen(modifier: Modifier = Modifier) {
 @Composable
 fun DetailCard(
     classroom: classroom,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navController: NavController? = null,
+    isFullScreen: Boolean = false
 ) {
     var isFavorite by remember { mutableStateOf(false) }
     Card(
@@ -129,7 +167,7 @@ fun DetailCard(
                     contentDescription = classroom.namaRuang,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(200.dp),
+                        .height(if (isFullScreen) 300.dp else 200.dp),
                     contentScale = ContentScale.Crop
                 )
 
@@ -150,7 +188,7 @@ fun DetailCard(
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
                     text = classroom.namaRuang,
-                    style = MaterialTheme.typography.titleLarge,
+                    style = if (isFullScreen) MaterialTheme.typography.headlineMedium else MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.Bold
                 )
@@ -165,15 +203,64 @@ fun DetailCard(
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {},
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Book Now")
+                if (!isFullScreen) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(
+                        onClick = {
+                            navController?.navigate("detail/${classroom.namaRuang}")
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Book Now")
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun DetailScreen(classroom: classroom, navController: NavController) {
+    var isLoading by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        bottomBar = {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            isLoading = true
+                            delay(2000)
+                            snackbarHostState.showSnackbar("Booking ${classroom.namaRuang} berhasil!")
+                            isLoading = false
+                        }
+                    },
+                    enabled = !isLoading,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    if (isLoading) {
+                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Memproses...")
+                    } else {
+                        Text("Konfirmasi Booking")
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Button(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Kembali")
+                }
+            }
+        }
+    ) { padding ->
+        Box(modifier = Modifier.padding(padding)) {
+            DetailCard(classroom = classroom, isFullScreen = true)
         }
     }
 }
@@ -181,7 +268,8 @@ fun DetailCard(
 @Preview(showBackground = true)
 @Composable
 fun ClassroomPreview() {
+    val navController = rememberNavController()
     praktam2_2417051048Theme {
-        ClassroomScreen()
+        ClassroomScreen(navController = navController)
     }
 }
