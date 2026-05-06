@@ -1,7 +1,6 @@
 package com.example.praktam2_2417051048
 
 import model.classroom
-import model.classroomsource
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -54,10 +53,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavController
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
 
 
 @Composable
 fun ClassRowItem(classroom: classroom, navController: NavController) {
+
     Card(
         modifier = Modifier.width(160.dp)
             .clickable {
@@ -70,12 +72,14 @@ fun ClassRowItem(classroom: classroom, navController: NavController) {
         elevation = CardDefaults.cardElevation(4.dp)
     ) {
         Column {
-            Image(
-                painter = painterResource(classroom.imageRes),
+            AsyncImage(
+                model = classroom.imageRes,
                 contentDescription = classroom.namaRuang,
+                placeholder = painterResource(id = R.drawable.img),
+                error = painterResource(id = R.drawable.img),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp),
+                    .height(100.dp),
                 contentScale = ContentScale.Crop
             )
 

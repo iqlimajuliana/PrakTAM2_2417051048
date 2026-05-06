@@ -1,10 +1,14 @@
 package model
-import androidx.annotation.DrawableRes
+import com.google.gson.annotations.SerializedName
 
 data class classroom (
+    @SerializedName("nama_ruang")
     val namaRuang: String,
+    @SerializedName("status")
     val status: String,
+    @SerializedName("kapasitas")
     val kapasitas: Int,
-    @DrawableRes val imageRes: Int,
+    @SerializedName("image_url")
+    val imageRes: String,
 
     )
