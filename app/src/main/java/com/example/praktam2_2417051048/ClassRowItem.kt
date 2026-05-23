@@ -1,6 +1,6 @@
 package com.example.praktam2_2417051048
 
-import model.classroom
+import com.example.praktam2_2417051048.data.model.classroom
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -73,10 +73,9 @@ fun ClassRowItem(classroom: classroom, navController: NavController) {
     ) {
         Column {
             AsyncImage(
-                model = classroom.imageRes,
+                model = classroom.imageUrl,
                 contentDescription = classroom.namaRuang,
-                placeholder = painterResource(id = R.drawable.img),
-                error = painterResource(id = R.drawable.img),
+                placeholder = painterResource(R.drawable.img_3),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp),
